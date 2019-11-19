@@ -35,26 +35,36 @@ public class Player {
     }
     
     /**
-     * Choose (if exists) a pair of singing cards to sing them in the game.
+     * Choose (if exists) a pair of singing cards to sing them in the game. Choose the best 
+     * pair among all posibilities to sing.
+     * (TUTE > 40s > 20s)
+     * 
+     * In the case that the chosen one was a "Tute sing", the method will return 4 cards (4 Horses or 4 Kings).
+     * 
      * @param game Game where the player is playing
-     * @return the pair of cards to sing
+     * @return the list of cards to sing
      */
-    public ArrayList<Cards> sing(Table game) {//TODO When the method 'canSing()' is ready, change this return for "return canSing().subList(0, 2);"
+    public ArrayList<Cards> sing(Table game) {
         
-        ArrayList<Suits> singingSuits = canSing(game);
+        ArrayList< ArrayList<Cards> > singCards = canSing(game);
         
-        if (singingSuits.isEmpty())
+        if (singCards.isEmpty())
             return new ArrayList<>();
         
-        for (Suits suit : singingSuits) { //Si son las 40, canta eso directamente
-            if (suit.equals(game.getTriunfo().getSuit())) {
-                this.sings.add(suit);
-                return new ArrayList<>(Arrays.asList(Cards.getCard(Numbers.HORSE, suit),Cards.getCard(Numbers.KING, suit)));
+        for (ArrayList<Cards> sings : singCards) { //TUTE
+            if (sings.size()==4)
+                return sings;
+        }
+        
+        for (ArrayList<Cards> sings : singCards) { //40s
+            if (sings.get(0).getSuit().equals(game.getTriunfo().getSuit())) {
+                this.sings.add(sings.get(0).getSuit());
+                return sings;
             }
         }
         
-        this.sings.add(singingSuits.get(0)); //Si no hay 40s, canta las primeras 20 que tengas
-        return new ArrayList<>(Arrays.asList(Cards.getCard(Numbers.HORSE, singingSuits.get(0)),Cards.getCard(Numbers.KING, singingSuits.get(0))));
+        this.sings.add(singCards.get(0).get(0).getSuit()); //20s (da igual cual, pilla el primer palo que le llega)
+        return singCards.get(0);
         
     }
     
@@ -87,42 +97,51 @@ public class Player {
     }
     
     /**
-     * Search the pairs of the cards in the player hand which can be singed.
+     * Search the cards in the player hand which can be singed.
+     * 
+     * In the case that the chosen one was a "Tute sing".
+     * 
      * @param game Game where the player is playing
      * @return List of cards which can be singed
      */
-    private ArrayList<Suits> canSing (Table game) {
-        ArrayList<Suits> suitsToSing = new ArrayList<>();
+    private ArrayList< ArrayList<Cards> > canSing (Table game) {
+        ArrayList< ArrayList<Cards> > cardsToSing = new ArrayList<>();
         
-        ArrayList<Cards> figures = new ArrayList<>();
-        for (Cards d : hand) //Filtro las cartas de la mano y dejo solo los caballos y los reyes
-            if (d.getNumber()==Numbers.HORSE || d.getNumber()==Numbers.KING)
-                figures.add(d);
-        
-        for (int i=0; i<figures.size(); i++) { //Escojo una por una las cartas de la mano filtrada para compararla con todas las demas (solo las siguientes)
-            
-            if (this.sings.contains(figures.get(i).getSuit()) || suitsToSing.contains(figures.get(i).getSuit())) //Si ya la ha cantado antes o si ya esta añadida a la lista de posibles cantes
-                continue;
-            
-            if (figures.get(i).getNumber() == Numbers.HORSE) { //Compruebo si es un caballo
-                for (int j=i+1; j<figures.size(); j++) { //Escojo una por una las cartas siguientes a la escogida antes
-                    if ( figures.get(j).getNumber()==Numbers.KING && figures.get(j).getSuit()==figures.get(i).getSuit() ) { //Comparo ambas cartas escogidas comprobando primero si la segunda es un rey y despues si es del mismo palo que la primera
-                        suitsToSing.add(figures.get(i).getSuit());
-                        break;
-                     }
-                }
-            } else { //Como no es un caballo solo puede ser un rey (la mano esta filtrada con solo los caballos y los reyes)
-                for (int j=i+1; j<figures.size(); j++) {
-                    if ( figures.get(j).getNumber()==Numbers.HORSE && figures.get(j).getSuit()==figures.get(i).getSuit() ) {
-                        suitsToSing.add(figures.get(i).getSuit());
-                        break;
-                    }
-                }
-            }
-            
+        ArrayList<Cards> horses = new ArrayList<>();
+        ArrayList<Cards> kings  = new ArrayList<>();
+        for (Cards d : hand) {//Filtro las cartas de la mano y dejo solo los caballos y los reyes
+            if (d.getNumber()==Numbers.HORSE) horses.add(d);
+            else if (d.getNumber().equals(Numbers.KING)) kings.add(d);
         }
         
-        return suitsToSing;
+        if (kings.size()==4) {
+            cardsToSing.add( kings );
+            sings.addAll( Arrays.asList(Suits.values()) );
+            return cardsToSing;
+        }
+        
+        if (horses.size()==4) {
+            cardsToSing.add( horses );
+            sings.addAll(Arrays.asList(Suits.values()));
+            return cardsToSing;
+        }
+        
+        for (Cards h : horses) {
+            
+            if (this.sings.contains(h.getSuit())) //Si ya la ha cantado antes o si ya esta añadida a la lista de posibles cantes
+                continue;
+            
+            for (Cards k : kings) {
+                
+                if (h.getSuit().equals(k.getSuit())) {
+                    cardsToSing.add( new ArrayList<>(Arrays.asList(h,k)) );
+                    break;
+                }
+                
+            }
+        }
+        
+        return cardsToSing;
     }
     
     public void addPoints(int points) {
