@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -72,7 +73,33 @@ public class Table {
     }
 
     private Entry<Player, Cards> checkWonPlay() {
-        return new ArrayList<>(currentPlay.entrySet()).get((int) (Math.random() * currentPlay.entrySet().size()));
+        Player jugadorGanador = null;
+        
+        ArrayList<Entry<Player, Cards>> plays = new ArrayList<>(currentPlay.entrySet());
+
+        for (Map.Entry<Player, Cards> entry : plays) {
+            if (jugadorGanador == null) {
+                jugadorGanador = entry.getKey();
+                continue;
+            }
+            if (currentPlay.get(jugadorGanador).getSuit().equals(entry.getValue().getSuit())) {
+                if (currentPlay.get(jugadorGanador).getNumber().compareTo(entry.getValue().getNumber()) < 0) {//El compare no se usa igual que el compareTo, asi que igual hay que cambiarlo
+                    jugadorGanador = entry.getKey();
+                }
+            } else {
+                if (entry.getValue().getSuit().equals(Triunfo.getSuit())) {
+                    jugadorGanador = entry.getKey();
+                }
+            }
+
+            //System.out.println("Jugador Ganador: " + currentPlay.get(jugadorGanador).getNumber(). + " Value : " + entry.getValue());
+        }
+        
+        for (Map.Entry<Player, Cards> entry : currentPlay.entrySet()) {
+            if (entry.getKey().equals(jugadorGanador))
+                return entry;
+        }
+        return null;
     }
 
     private void finishRound(Player winner) {
@@ -148,7 +175,7 @@ public class Table {
             System.out.println();
 
             Utils.rotatePlayerArray(players, wonPlay.getKey()); //put the won player as the first one to start the next play
-
+            currentPlay.clear();
         }
 
         players.sort(new Comparator<Player>() {
