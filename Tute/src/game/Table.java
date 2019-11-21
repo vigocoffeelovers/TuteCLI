@@ -20,7 +20,7 @@ public class Table {
 
     private static final int INIT_HAND_CARDS = 10;
     private static final int TOTAL_PLAYS_NUMBER = INIT_HAND_CARDS;
-    private static final int INIT_SHUFFLE_PERMUTATIONS = 100; //TODO?
+    //private static final int INIT_SHUFFLE_PERMUTATIONS = 100; //TODO?
 
     /**
      * Won plays. List of plays (set of cards) which the player has won over the
@@ -42,10 +42,12 @@ public class Table {
         shuffleDeck(100);
     }
 
+    
     private void shuffleDeck(int permutations) {
         Collections.shuffle(deck);
     }
 
+    
     private void initialDeal() {
         for (int i = 0; i < INIT_HAND_CARDS; i++) {
             for (int j = 0; j < players.size(); j++) {
@@ -54,6 +56,7 @@ public class Table {
         }
     }
 
+    
     private Cards dealCard(Player player, boolean Triunfo) {
         Cards dealingCard = deck.get(0);
         player.receiveCard(dealingCard);
@@ -64,14 +67,17 @@ public class Table {
         return dealingCard;
     }
 
+    
     private Cards askForCard(Player player) { //ask for card = hit ?¿? simple language doubt
         return player.playCard(this);
     }
 
+    
     private ArrayList<Cards> askForSing(Player player) {
         return player.sing(this);
     }
 
+    
     private Entry<Player, Cards> checkWonPlay() {
         Player jugadorGanador = null;
         
@@ -102,16 +108,24 @@ public class Table {
         return null;
     }
 
+    
     private void finishRound(Player winner) {
         System.out.println(ANSI_RED + " ####### CONGRATULATIONS, the player " + winner + " has won this round ###### " + ANSI_RESET);
         System.exit(0); //TODO
     }
 
+    
     public Cards getTriunfo() {
         return Triunfo;
     }
+    
+    
+    public Map<Player,Cards> getPlayedCards() {
+        return currentPlay;
+    }
 
-    public void startGame() { //Sorry, my bad
+    
+    public void startGame() {
 
         initialDeal();
 
@@ -169,7 +183,9 @@ public class Table {
             wonPlay.getKey().addPoints(Cards.calculatePoints(new ArrayList<>(currentPlay.values())));
 
             System.out.println("CURRENT POINTS IN THE " + i + "º PLAY:");
-            players.forEach((p) -> {
+            ArrayList<Player> sortedPlayers = new ArrayList<>(players);
+            sortedPlayers.sort(playersByPoints);
+            sortedPlayers.forEach((Player p) -> {
                 System.out.println(((p instanceof Human) ? ANSI_BLUE : "") + p + "\t - \t" + p.getPoints() + ((p instanceof Human) ? ANSI_RESET : ""));
             });
             System.out.println();
@@ -178,20 +194,22 @@ public class Table {
             currentPlay.clear();
         }
 
-        players.sort(new Comparator<Player>() {
-            @Override
-            public int compare(Player o1, Player o2) {
-                if (o1.getPoints() > o2.getPoints()) {
-                    return -1;
-                } else if (o1.getPoints() < o2.getPoints()) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            }
-        });
+        players.sort(playersByPoints);
 
         finishRound(players.get(0));
 
     }
+    
+    private final static Comparator playersByPoints = new Comparator<Player>() {
+        @Override
+        public int compare(Player o1, Player o2) {
+            if (o1.getPoints() > o2.getPoints()) {
+                return -1;
+            } else if (o1.getPoints() < o2.getPoints()) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+    };
 }
