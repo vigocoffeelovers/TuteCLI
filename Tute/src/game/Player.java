@@ -2,6 +2,7 @@ package game;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * This class creates a Tute player.
@@ -9,10 +10,10 @@ import java.util.Arrays;
  */
 public class Player {
     
-    String name;
-    ArrayList<Cards> hand = new ArrayList<>();
-    int points;
-    ArrayList<Suits> sings = new ArrayList<>();
+    protected String name;
+    protected ArrayList<Cards> hand;
+    protected int points;
+    protected ArrayList<Suits> sings;
     
     
     /**
@@ -20,8 +21,20 @@ public class Player {
      * @param name Name of the player. It will work as an identifier for him. //TODO create a number id?
      */
     public Player(String name) {
-        this.name = name;
+        this.hand   = new ArrayList<>();
+        this.sings  = new ArrayList<>();
+        this.name   = name;
     }
+    
+    
+    /**
+     * Add the given card to the player hand.
+     * @param card Card to add to the hand
+     */
+    public void receiveCard(Cards card) {
+        hand.add(card);
+    }
+    
     
     /**
      * Choose a card from among his hand to play in his next play.
@@ -29,10 +42,12 @@ public class Player {
      * @return the chosen card to play
      */
     public Cards playCard(Table game) {
-        Cards chosen_card = hand.get((int)(Math.random()*hand.size())); //TODO Now is being choosing a random card
+        ArrayList<Cards> playableCards = checkPlayableCards(game);
+        Cards chosen_card = playableCards.get((int)(Math.random()*playableCards.size())); //TODO Now is being choosing a random card
         hand.remove(chosen_card);
         return chosen_card;
     }
+    
     
     /**
      * Choose (if exists) a pair of singing cards to sing them in the game. Choose the best 
@@ -46,7 +61,7 @@ public class Player {
      */
     public ArrayList<Cards> sing(Table game) {
         
-        ArrayList< ArrayList<Cards> > singCards = canSing(game);
+        ArrayList< ArrayList<Cards> > singCards = checkSingableCards(game);
         
         if (singCards.isEmpty())
             return new ArrayList<>();
@@ -68,33 +83,29 @@ public class Player {
         
     }
     
-    public void receiveCard(Cards card) {
-        hand.add(card);
-    }
+    
     
     /**
-     * Checks what card in the player hand can be played.
+     * Calculate the cards which can be played in the current play from the player hand.
      * @param game Game where the player is playing
-     * @return A list with allowed cards to play
+     * @return a list with the playable cards
      */
-    private ArrayList<Cards> checkPlays(Table game) {
-        ArrayList<Cards> allowed = new ArrayList<>();
-        for (Cards c : hand) {
-            if (canPlay(game, c))
-                allowed.add(c);
+    protected ArrayList<Cards> checkPlayableCards(Table game) {
+        if (game.getPlayedCards().isEmpty()) {
+            return hand;
         }
-        return allowed;
+        
+        Cards firstCard                  = new ArrayList<>(game.getPlayedCards().entrySet()).get(0).getValue();
+        ArrayList<Cards> eqSuit          = hand.stream().filter(card -> card.getSuit()   .equals(firstCard.getSuit())               ).collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Cards> lessValue       = hand.stream().filter(card -> card.getNumber() .compareTo(firstCard.getNumber()) == -1    ).collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Cards> eqTriunfoSuit   = hand.stream().filter(card -> card.getSuit()   .equals(game.getTriunfo().getSuit())       ).collect(Collectors.toCollection(ArrayList::new));
+        
+              if ( !eqSuit.isEmpty()        )   return eqSuit;
+        else  if ( !lessValue.isEmpty()     )   return lessValue;
+        else  if ( !eqTriunfoSuit.isEmpty() )   return eqTriunfoSuit;
+        else                                    return hand;
     }
     
-    /**
-     * Check if the given card can be played.
-     * @param game Game where the player is playing
-     * @param card Card to check
-     * @return True if the card can be played or False if not
-     */
-    private boolean canPlay(Table game, Cards card) { //TODO define the rules
-        return true;
-    }
     
     /**
      * Search the cards in the player hand which can be singed.
@@ -104,12 +115,12 @@ public class Player {
      * @param game Game where the player is playing
      * @return List of cards which can be singed
      */
-    private ArrayList< ArrayList<Cards> > canSing (Table game) {
+    protected ArrayList< ArrayList<Cards> > checkSingableCards (Table game) {
         ArrayList< ArrayList<Cards> > cardsToSing = new ArrayList<>();
         
-        ArrayList<Cards> horses = new ArrayList<>();
-        ArrayList<Cards> kings  = new ArrayList<>();
-        for (Cards d : hand) {//Filtro las cartas de la mano y dejo solo los caballos y los reyes
+        ArrayList<Cards> horses = new ArrayList<>(); //Antes de nada, filtro las cartas de la
+        ArrayList<Cards> kings  = new ArrayList<>();    //mano y dejo solo los caballos y los reyes
+        for (Cards d : hand) {
             if (d.getNumber()==Numbers.HORSE) horses.add(d);
             else if (d.getNumber().equals(Numbers.KING)) kings.add(d);
         }
@@ -127,22 +138,20 @@ public class Player {
         }
         
         for (Cards h : horses) {
-            
             if (this.sings.contains(h.getSuit())) //Si ya la ha cantado antes o si ya esta añadida a la lista de posibles cantes
                 continue;
-            
             for (Cards k : kings) {
-                
                 if (h.getSuit().equals(k.getSuit())) {
                     cardsToSing.add( new ArrayList<>(Arrays.asList(h,k)) );
                     break;
                 }
-                
             }
         }
         
         return cardsToSing;
     }
+    
+    
     
     public void addPoints(int points) {
         this.points += points;
