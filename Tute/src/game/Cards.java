@@ -2,7 +2,7 @@ package game;
 
 import java.util.ArrayList;
 
-enum Cards{
+public enum Cards{
     
     ACE_COINS   (new Card(Suits.COINS,Numbers.ACE)),
     TWO_COINS   (new Card(Suits.COINS,Numbers.TWO)),
