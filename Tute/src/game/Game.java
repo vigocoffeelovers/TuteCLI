@@ -20,10 +20,9 @@ public class Game {
     
     private int FINISH_ROUND = 0;
     
-    private ArrayList<Player> players;
-    
-    private ArrayList<Player> Team1;
-    private ArrayList<Player> Team2;
+    private final ArrayList<Player> players;
+    private final ArrayList<Player> Team1;
+    private final ArrayList<Player> Team2;
     private int pointsTeam1;
     private int pointsTeam2;
     
@@ -43,8 +42,7 @@ public class Game {
         Team2.add(players.get(1));
         Team2.add(players.get(3));
     }
-    
-    
+
     
     
     private void finishRound(int team) {
@@ -57,8 +55,7 @@ public class Game {
     
     
     
-    
-    private Map.Entry<Player, Cards> checkWonPlay() {
+    private Map.Entry<Player, Cards> checkWonCard() {
         Player jugadorGanador = null;
         
         ArrayList<Map.Entry<Player, Cards>> plays = new ArrayList<>(table.getPlayedCards().entrySet());
@@ -87,6 +84,29 @@ public class Game {
     
     
     
+    public Cards checkWonCard(ArrayList<Cards> plays) {
+        Cards cartaGanadora = null;
+        
+        for (Cards c : plays) {
+            if (cartaGanadora == null) {
+                cartaGanadora = plays.get(0);
+                continue;
+            }
+            if (cartaGanadora.getSuit().equals(c.getSuit())) {
+                if (cartaGanadora.getNumber().compareTo(c.getNumber()) < 0) {
+                    cartaGanadora = c;
+                }
+            } else {
+                if (c.getSuit().equals(table.getTriunfo().getSuit())) {
+                    cartaGanadora = c;
+                }
+            }
+        }
+        
+        return cartaGanadora;
+    }
+    
+    
     
     private void initialDeal() {
         for (int i = 0; i < INIT_HAND_CARDS; i++) {
@@ -110,17 +130,16 @@ public class Game {
     
     
     
-    
     private Cards askForCard(Player player) {
         return player.playCard();
     }
 
     
     
-    
     private ArrayList<Cards> askForSing(Player player) {
         return player.sing();
     }
+    
     
     
     public void addPoints(int team, int points) {
@@ -157,7 +176,6 @@ public class Game {
     
     
     
-    
     public void startGameCLI() {
 
         initialDeal();
@@ -171,25 +189,26 @@ public class Game {
             System.out.println("########################## PLAY " + i + " ####################################" + ((i < 10) ? "#" : ""));
             System.out.println("#######################################################################");
 
+            
             System.out.println("HANDS IN THE " + i + "º PLAY:");
-            players.forEach((p) -> {
-                System.out.print(p + "\t - \t");
-                ArrayList<Cards> playableCards = p.checkPlayableCards();
-                System.out.println(((p instanceof Human) ? ANSI_BLUE : "") + playableCards + ((p instanceof Human) ? ANSI_RESET : ""));
-            });
+            
+            players.forEach((p) -> {System.out.println(((p instanceof Human) ? ANSI_BLUE : "") + p + "\t - \t" + p.getHand() + ((p instanceof Human) ? ANSI_RESET : ""));});
+            
             System.out.println();
-            System.out.println(" -> Asking for cards...");
 
-            System.out.println("CURRENT TRICK IN THE " + i + "º PLAY:");
+            
+            System.out.println("TRICK FOR THE " + i + "º PLAY:");
+            
             players.forEach((p) -> {
                 System.out.print(((p instanceof Human) ? ANSI_BLUE : "") + p + "\t - \t");
                 table.getPlayedCards().put(p, askForCard(p));
                 System.out.print((p instanceof Human) ? ANSI_RESET : table.getPlayedCards().get(p) + "\n");
             });
+            
             System.out.println();
-            System.out.println(" -> Checking won trick player...");
 
-            Map.Entry<Player, Cards> wonPlay = checkWonPlay();
+            
+            Map.Entry<Player, Cards> wonPlay = checkWonCard();
 
             System.out.println("The player " + wonPlay.getKey() + " has won the play with the card [" + wonPlay.getValue() + "]");
             System.out.println();
@@ -198,6 +217,7 @@ public class Game {
 
             table.addTrick(wonPlay.getKey());
 
+            
             System.out.println(" -> Asking the player " + wonPlay.getKey() + " for a sing");
 
             ArrayList<Cards> sing = askForSing(wonPlay.getKey());
@@ -217,15 +237,14 @@ public class Game {
             System.out.println();
 
             
-            
-            
             System.out.println("CURRENT POINTS IN THE " + i + "º PLAY:");
-            System.out.println( Team1 + "\t - \t" + pointsTeam1);
-            System.out.println( Team2 + "\t - \t" + pointsTeam2);
-            
+            System.out.println( "Team 1 " + Team1 + "\t - \t" + pointsTeam1);
+            System.out.println( "Team 2 " + Team2 + "\t - \t" + pointsTeam2);
+            System.out.println("");
             
             Utils.rotatePlayerArray(players, wonPlay.getKey()); //put the won player as the first one to start the next play
             table.removeCurrentPlay();
+            
         }
 
         if (pointsTeam1 > pointsTeam2)
@@ -250,6 +269,7 @@ public class Game {
         ));
 
         Game game = new Game(players);
+        
         game.startGameCLI();
 
     }

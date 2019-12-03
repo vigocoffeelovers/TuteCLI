@@ -16,6 +16,7 @@ public class Player {
     protected Game game;
     
     
+    
     /**
      * Creates a player ready to play a Tute match.
      * @param name Name of the player. It will work as an identifier for him.
@@ -25,6 +26,8 @@ public class Player {
         this.sings  = new ArrayList<>();
         this.name   = name;
     }
+    
+    
     
     /**
      * Creates a player ready to play a Tute match.
@@ -37,6 +40,7 @@ public class Player {
     }
     
     
+    
     /**
      * Add the given card to the player hand.
      * @param card Card to add to the hand
@@ -44,6 +48,7 @@ public class Player {
     public void receiveCard(Cards card) {
         hand.add(card);
     }
+    
     
     
     /**
@@ -58,6 +63,7 @@ public class Player {
     }
     
     
+    
     /**
      * Choose (if exists) a pair of singing cards to sing them in the game. Choose the best 
      * pair among all posibilities to sing.
@@ -67,22 +73,22 @@ public class Player {
      * 
      * @return the list of cards to sing
      */
-    public ArrayList<Cards> sing() { //TODO
+    public ArrayList<Cards> sing() {
         
         ArrayList< ArrayList<Cards> > singCards = checkSingableCards();
         
         if (singCards.isEmpty())
             return new ArrayList<>();
         
-        for (ArrayList<Cards> sings : singCards) { //TUTE
-            if (sings.size()==4)
-                return sings;
+        for (ArrayList<Cards> s : singCards) { //TUTE
+            if (s.size()==4)
+                return s;
         }
         
-        for (ArrayList<Cards> sings : singCards) { //40s
-            if (sings.get(0).getSuit().equals(game.table.getTriunfo().getSuit())) {
-                this.sings.add(sings.get(0).getSuit());
-                return sings;
+        for (ArrayList<Cards> s : singCards) { //40s
+            if (s.get(0).getSuit().equals(game.table.getTriunfo().getSuit())) {
+                this.sings.add(s.get(0).getSuit());
+                return s;
             }
         }
         
@@ -90,6 +96,7 @@ public class Player {
         return singCards.get(0);
         
     }
+    
     
     
     /**
@@ -126,6 +133,7 @@ public class Player {
         return bestCard;
         
     }
+    
     
     
     /**
@@ -173,6 +181,7 @@ public class Player {
     }
     
     
+    
     /**
      * Calculate the cards which can be played in the current play from the player hand.
      * @return a list with the playable cards
@@ -190,8 +199,8 @@ public class Player {
         Cards Triunfo                   = game.table.getTriunfo();
         
         ArrayList<Cards> CartasParaAsistirAlPrimerJugador   = hand.stream().filter( c -> c.getSuit().equals(firstCard.getSuit())                                                                ).collect(Collectors.toCollection(ArrayList::new));
-        ArrayList<Cards> CartasParaSubirAlPrimerJugador     = hand.stream().filter( c -> c.getSuit().equals(firstCard.getSuit()) && c.getNumber().compareTo(firstCard.getNumber()) == 1         ).collect(Collectors.toCollection(ArrayList::new));
-        ArrayList<Cards> CartasParaSubirALaMejorCarta       = hand.stream().filter( c -> c.getSuit().equals(winCard.getSuit())   && c.getNumber().compareTo(winCard.getNumber())   == 1         ).collect(Collectors.toCollection(ArrayList::new)   );
+        ArrayList<Cards> CartasParaSubirAlPrimerJugador     = hand.stream().filter( c -> c.getSuit().equals(firstCard.getSuit()) && c.getNumber().compareTo(firstCard.getNumber()) > 0         ).collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Cards> CartasParaSubirALaMejorCarta       = hand.stream().filter( c -> c.getSuit().equals(winCard.getSuit())   && c.getNumber().compareTo(winCard.getNumber())   > 0         ).collect(Collectors.toCollection(ArrayList::new)   );
         ArrayList<Cards> CartasTriunfos                     = hand.stream().filter( c -> c.getSuit().equals(Triunfo.getSuit())                                                                  ).collect(Collectors.toCollection(ArrayList::new)   );
         
         
