@@ -12,7 +12,6 @@ public class Player {
     
     protected String name;
     protected ArrayList<Cards> hand;
-    protected int points;
     protected ArrayList<Suits> sings;
     protected Game game;
     
@@ -68,7 +67,7 @@ public class Player {
      * 
      * @return the list of cards to sing
      */
-    public ArrayList<Cards> sing() {
+    public ArrayList<Cards> sing() { //TODO
         
         ArrayList< ArrayList<Cards> > singCards = checkSingableCards();
         
@@ -249,20 +248,9 @@ public class Player {
     }
     
     
+    
     public void joinGame(Game game) {
         this.game = game;
-    }
-    
-    public void addPoints(int points) {
-        this.points += points;
-    }
-    
-    public int getPoints() {
-        return points;
-    }
-    
-    public void setPoints(int points) {
-        this.points = points;
     }
     
     public ArrayList<Cards> getHand() {

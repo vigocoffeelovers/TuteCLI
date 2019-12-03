@@ -2,7 +2,6 @@ package game;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Map;
 
 /**
@@ -15,12 +14,18 @@ public class Game {
     public static final String ANSI_BLUE = "\033[0;34m";
     public static final String ANSI_RED = "\033[0;31m";
     
-    
     private static final int INIT_HAND_CARDS = 10;
     private static final int TOTAL_PLAYS_NUMBER = INIT_HAND_CARDS;
     //private static final int INIT_SHUFFLE_PERMUTATIONS = 100; //TODO?
     
+    private int FINISH_ROUND = 0;
+    
     private ArrayList<Player> players;
+    
+    private ArrayList<Player> Team1;
+    private ArrayList<Player> Team2;
+    private int pointsTeam1;
+    private int pointsTeam2;
     
     public Table table;
     
@@ -31,14 +36,23 @@ public class Game {
         this.players = players;
         for (Player p : players)
             p.joinGame(this);
+        Team1 = new ArrayList<>();
+        Team2 = new ArrayList<>();
+        Team1.add(players.get(0));
+        Team1.add(players.get(2));
+        Team2.add(players.get(1));
+        Team2.add(players.get(3));
     }
     
     
     
     
-    private void finishRound(Player winner) {
-        System.out.println(ANSI_RED + " ####### CONGRATULATIONS, the player " + winner + " has won this round ###### " + ANSI_RESET);
-        System.exit(0); //TODO
+    private void finishRound(int team) {
+        if (team != 0) 
+            System.out.println(ANSI_RED + " ####### CONGRATULATIONS, the team " + team + " has won this round ###### " + ANSI_RESET);
+        else
+            System.out.println(ANSI_RED + " ####### DRAW in this round ###### " + ANSI_RESET);
+        FINISH_ROUND = 1;
     }
     
     
@@ -109,16 +123,49 @@ public class Game {
     }
     
     
+    public void addPoints(int team, int points) {
+        if (team == 1)
+            pointsTeam1 += points;
+        else if (team == 2)
+            pointsTeam2 += points;
+    }
+    
+    public int getPoints(int team) {
+        if (team == 1)
+            return pointsTeam1;
+        else if (team == 2)
+            return pointsTeam2; 
+        else
+            return 0;
+    }
+    
+    public void setPoints(int team, int points) {
+        if (team == 1)
+            pointsTeam1 = points;
+        else if (team == 2)
+            pointsTeam2 = points;
+    }
+    
+    public int getTeam(Player p) {
+        if (Team1.contains(p))
+            return 1;
+        else if (Team2.contains(p))
+            return 2;
+        else
+            return 0;
+    }
     
     
-    public void startGame() {
+    
+    
+    public void startGameCLI() {
 
         initialDeal();
 
         System.out.println("The TRIUNFO is [" + table.getTriunfo() + "]");
         System.out.println();
 
-        for (int i = 1; i <= TOTAL_PLAYS_NUMBER; i++) {
+        for (int i = 1; i <= TOTAL_PLAYS_NUMBER || FINISH_ROUND == 1; i++) {
 
             System.out.println("#######################################################################");
             System.out.println("########################## PLAY " + i + " ####################################" + ((i < 10) ? "#" : ""));
@@ -147,7 +194,7 @@ public class Game {
             System.out.println("The player " + wonPlay.getKey() + " has won the play with the card [" + wonPlay.getValue() + "]");
             System.out.println();
             
-            wonPlay.getKey().addPoints(Cards.calculatePoints(new ArrayList<>(table.getPlayedCards().values())));
+            addPoints(getTeam(wonPlay.getKey()), Cards.calculatePoints(new ArrayList<>(table.getPlayedCards().values())));
 
             table.addTrick(wonPlay.getKey());
 
@@ -158,33 +205,35 @@ public class Game {
             if (!sing.isEmpty()) {
                 if (sing.size() == 4) {
                     System.out.println("The player " + wonPlay.getKey() + " has sung TUTE with the cards " + sing);
-                    finishRound(wonPlay.getKey());
-                }
-                if (sing.get(0).getSuit().equals(table.getTriunfo().getSuit())) {
+                    finishRound(getTeam(wonPlay.getKey()));
+                } else if (sing.get(0).getSuit().equals(table.getTriunfo().getSuit())) {
                     System.out.println("The player " + wonPlay.getKey() + " has sung the 40s with the cards " + sing);
-                    wonPlay.getKey().addPoints(40);
+                    addPoints(getTeam(wonPlay.getKey()), 40);
                 } else {
                     System.out.println("The player " + wonPlay.getKey() + " has sung the 20s with the cards " + sing);
-                    wonPlay.getKey().addPoints(20);
-                }//TODO cantar Tute (gana la partida directamente)
+                    addPoints(getTeam(wonPlay.getKey()), 20);
+                }
             }
             System.out.println();
 
+            
+            
+            
             System.out.println("CURRENT POINTS IN THE " + i + "º PLAY:");
-            ArrayList<Player> sortedPlayers = new ArrayList<>(players);
-            sortedPlayers.sort(playersByPoints);
-            sortedPlayers.forEach((Player p) -> {
-                System.out.println(((p instanceof Human) ? ANSI_BLUE : "") + p + "\t - \t" + p.getPoints() + ((p instanceof Human) ? ANSI_RESET : ""));
-            });
-            System.out.println();
-
+            System.out.println( Team1 + "\t - \t" + pointsTeam1);
+            System.out.println( Team2 + "\t - \t" + pointsTeam2);
+            
+            
             Utils.rotatePlayerArray(players, wonPlay.getKey()); //put the won player as the first one to start the next play
             table.removeCurrentPlay();
         }
 
-        players.sort(playersByPoints);
-
-        finishRound(players.get(0));
+        if (pointsTeam1 > pointsTeam2)
+            finishRound(1);
+        else if (pointsTeam1 < pointsTeam2)
+            finishRound(2);
+        else
+            finishRound(0);
 
     }
 
@@ -192,9 +241,6 @@ public class Game {
     
     
     public static void main(String[] args) {
-        
-        System.out.println("\033[0;31m" + "RED COLORED" +
-"\033[0m" + " NORMAL");
 
         ArrayList<Player> players = new ArrayList<>(Arrays.asList(
                 new Human("Sergio"),
@@ -204,24 +250,8 @@ public class Game {
         ));
 
         Game game = new Game(players);
-        game.startGame();
+        game.startGameCLI();
 
     }
-    
-    
-    
-    
-    private final static Comparator playersByPoints = new Comparator<Player>() {
-        @Override
-        public int compare(Player o1, Player o2) {
-            if (o1.getPoints() > o2.getPoints()) {
-                return -1;
-            } else if (o1.getPoints() < o2.getPoints()) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }
-    };
 
 }

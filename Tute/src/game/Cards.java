@@ -68,6 +68,10 @@ public enum Cards{
         return card.getNumber().getPoints();
     }
     
+//    public File getImage() {
+//        return card.getImage();
+//    }
+    
     public static int calculatePoints(ArrayList<Cards> cards) {
         int points = 0;
         for (Cards card : cards) {
