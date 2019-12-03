@@ -2,7 +2,7 @@ package game;
 
 public enum Suits {
     COINS,
-    COPS,
+    CUPS,
     CLUBS,
     SWORDS
 }

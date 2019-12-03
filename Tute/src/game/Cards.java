@@ -2,7 +2,7 @@ package game;
 
 import java.util.ArrayList;
 
-enum Cards{
+public enum Cards{
     
     ACE_COINS   (new Card(Suits.COINS,Numbers.ACE)),
     TWO_COINS   (new Card(Suits.COINS,Numbers.TWO)),
@@ -15,16 +15,16 @@ enum Cards{
     HORSE_COINS (new Card(Suits.COINS,Numbers.HORSE)),
     KING_COINS  (new Card(Suits.COINS,Numbers.KING)),
     
-    ACE_COPS    (new Card(Suits.COPS,Numbers.ACE)),
-    TWO_COPS    (new Card(Suits.COPS,Numbers.TWO)),
-    THREE_COPS  (new Card(Suits.COPS,Numbers.THREE)),
-    FOUR_COPS   (new Card(Suits.COPS,Numbers.FOUR)),
-    FIVE_COPS   (new Card(Suits.COPS,Numbers.FIVE)),
-    SIX_COPS    (new Card(Suits.COPS,Numbers.SIX)),
-    SEVEN_COPS  (new Card(Suits.COPS,Numbers.SEVEN)),
-    JACK_COPS   (new Card(Suits.COPS,Numbers.JACK)),
-    HORSE_COPS  (new Card(Suits.COPS,Numbers.HORSE)),
-    KING_COPS   (new Card(Suits.COPS,Numbers.KING)),
+    ACE_COPS    (new Card(Suits.CUPS,Numbers.ACE)),
+    TWO_COPS    (new Card(Suits.CUPS,Numbers.TWO)),
+    THREE_COPS  (new Card(Suits.CUPS,Numbers.THREE)),
+    FOUR_COPS   (new Card(Suits.CUPS,Numbers.FOUR)),
+    FIVE_COPS   (new Card(Suits.CUPS,Numbers.FIVE)),
+    SIX_COPS    (new Card(Suits.CUPS,Numbers.SIX)),
+    SEVEN_COPS  (new Card(Suits.CUPS,Numbers.SEVEN)),
+    JACK_COPS   (new Card(Suits.CUPS,Numbers.JACK)),
+    HORSE_COPS  (new Card(Suits.CUPS,Numbers.HORSE)),
+    KING_COPS   (new Card(Suits.CUPS,Numbers.KING)),
 
     ACE_SWORDS  (new Card(Suits.SWORDS,Numbers.ACE)),
     TWO_SWORDS  (new Card(Suits.SWORDS,Numbers.TWO)),
@@ -67,6 +67,10 @@ enum Cards{
     public int getPoints() {
         return card.getNumber().getPoints();
     }
+    
+//    public File getImage() {
+//        return card.getImage();
+//    }
     
     public static int calculatePoints(ArrayList<Cards> cards) {
         int points = 0;
